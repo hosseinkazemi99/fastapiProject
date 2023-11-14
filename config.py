@@ -1,12 +1,13 @@
 from fastapi import FastAPI
 from dotenv import load_dotenv
-from routers import user, protect
+from routers import user, protect, instalogin
 from database import database
 
 
 app = FastAPI()
 app.include_router(user.router, tags=["user"])
 app.include_router(protect.router, tags=["protected"])
+app.include_router(instalogin.router, tags=["instagram"])
 load_dotenv()
 
 
