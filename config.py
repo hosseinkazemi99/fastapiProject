@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from dotenv import load_dotenv
-from routers import user
+from routers import user, protect
 from database import database
 
 
 app = FastAPI()
 app.include_router(user.router, tags=["user"])
+app.include_router(protect.router, tags=["protected"])
 load_dotenv()
 
 
