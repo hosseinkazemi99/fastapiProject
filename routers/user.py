@@ -1,6 +1,7 @@
-from schemas.token import Token, create_access_token
-from schemas.user import authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, User, UserInDB, get_password_hash
-
+from schemas.token import Token
+from dependencies.token import create_access_token
+from schemas.user import User, UserInDB
+from dependencies.user import authenticate_user, get_password_hash
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from fastapi import Depends, HTTPException, status, APIRouter
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -9,6 +10,7 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 from database import get_database
+
 load_dotenv()
 SECRET_KEY = os.environ.get('SECRET_KEY')
 ALGORITHM = os.environ.get('ALGORITHM')
@@ -18,8 +20,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 hashed_password = pwd_context.hash("user_password")
-
-
 
 router = APIRouter()
 
@@ -72,7 +72,6 @@ async def register_user(
         new_user = {"username": user.username, "email": user.email, "hashed_password": hashed_password}
         result = await collection.insert_one(new_user)
         return {"username": user.username, "email": user.email}
-
 
 
 @router.get("/users", response_model=list[User])
