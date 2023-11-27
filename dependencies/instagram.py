@@ -29,7 +29,7 @@ async def login(username: str, password: str) -> dict:
 
     login_response = requests.post(login_url, data=payload, headers=login_header)
     json_data = json.loads(login_response.text)
-    # print(json_data)
+
     if json_data.get("authenticated"):
         cookies = login_response.cookies
         cookie_jar = cookies.get_dict()
@@ -37,3 +37,4 @@ async def login(username: str, password: str) -> dict:
         return cookie_jar
 
     raise Exception(login_response.text)
+
