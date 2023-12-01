@@ -5,7 +5,7 @@ from dependencies.instagram import login
 from motor.motor_asyncio import AsyncIOMotorClient
 from database import get_database
 from dependencies.token import verify_token
-from schemas.instagram import Instagram
+from schemas.instagram import Instagram, UserFollower
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -27,23 +27,18 @@ async def login_insta(instagram: Instagram, db: AsyncIOMotorClient = Depends(get
 
     except:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="username or password is incorrect")
-    collection = db["users"]
-    update_data = {
-        "$set": {
-            f"instagram_accounts.{instagram.username}": {"username": instagram.username, "password": instagram.password,
-                                                         "created_at": datetime.datetime.utcnow(),
-                                                         "cookie": cookie}}
-    }
+    users_collection = db["users"]
+    instagram_collection = db["instagram"]
+    update_instagram_data = {"$set": {"password": instagram.password,
+                                      "cookie": cookie},
+                             "$currentDate": {"last_update": {"$type": "date"}}}
 
-    result = await collection.update_one({"username": user}, update_data,
-                                         upsert=True)
+    update_instagram_collection = await instagram_collection.update_one({"instagram_account": instagram.username},
+                                                                        update_instagram_data,
+                                                                        upsert=True)
 
-    inserted_id = result.upserted_id
-
-    if inserted_id is None:
-        existing_record = await collection.find_one({"username": user})
-        inserted_id = existing_record["_id"]
-
-    return {"data_id": str(inserted_id)}
-
-
+    instagram_account_collection = await instagram_collection.find_one({"instagram_account": instagram.username})
+    instagram_account_collection_id = instagram_account_collection["_id"]
+    update_user_data = {"$set": {f"instagram_account.{instagram.username}": str(instagram_account_collection_id)}}
+    update_users_collection = await users_collection.update_one({"username": user}, update_user_data, upsert=True)
+    return {"data_id": str(instagram_account_collection_id)}
