@@ -6,7 +6,7 @@ from typing import Annotated
 from jose import JWTError, jwt
 import os
 from dotenv import load_dotenv
-from database import database, get_database
+from database import Users_Collection
 from schemas.token import TokenData
 from schemas.user import User
 
@@ -33,12 +33,11 @@ async def get_user(username: str, db: AsyncIOMotorDatabase):
         return None
 
 
-async def authenticate_user(username: str, password: str, db: AsyncIOMotorDatabase = Depends(get_database())):
-    collection = db["users"]
-    user = await collection.find_one({"username": username})
+async def authenticate_user(username: str, password: str):
+    user = await Users_Collection.find_one({"username": username})
     if not user:
         return None
-    if not verify_password(password, user["hashed_password"]):
+    if not verify_password(password, user.hashed_password):
         return None
     return user
 
@@ -65,10 +64,10 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = get_user(database, username=token_data.username)
+    user = await Users_Collection.find_one({"username":token_data.username})
     if user is None:
         raise credentials_exception
-    return user
+    return user.to_json()
 
 
 async def get_current_active_user(

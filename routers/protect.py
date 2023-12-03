@@ -12,5 +12,5 @@ async def protected(token: str = Depends(oauth2_scheme)):
     payload = verify_token(token)
     username: str = payload.get("sub")
     if type(payload) is not dict:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     return {"message": f"Hello {username} to this protected resource", "token": token}
