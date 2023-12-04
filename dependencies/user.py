@@ -21,14 +21,12 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-async def get_user(username: str, db: AsyncIOMotorDatabase):
-    collection = db["users"]
-    result = await collection.find_one({"username": username})
+async def get_user(username: str):
+    result = await Users_Collection.find_one({"username": username})
 
     if result:
-        user_dict = result.copy()
-        user_dict.pop("_id")
-        return user_dict
+
+        return result.model_dump()
     else:
         return None
 
@@ -67,7 +65,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     user = await Users_Collection.find_one({"username":token_data.username})
     if user is None:
         raise credentials_exception
-    return user.to_json()
+    return user.model_dump()
 
 
 async def get_current_active_user(

@@ -1,17 +1,14 @@
-
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import beanie
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 from dotenv import load_dotenv
-from beanie import Document
+from beanie import Document, Link
 from pydantic import EmailStr, Field
-
+from typing import Optional, List
 
 load_dotenv()
-
-
 
 
 class Instagram_Collection(Document):
@@ -20,32 +17,12 @@ class Instagram_Collection(Document):
     cookie: dict
     last_update: str
 
-    def to_json(self):
-        return {
-            "id": str(self.id),
-            "instagram_account": self.instagram_account,
-            "password": self.password,
-            "cookie": self.cookie,
-            "last_update": self.last_update
-        }
-
 
 class Users_Collection(Document):
     username: str = Field(max_length=20)
     email: EmailStr
     hashed_password: str
-    instagram_account: dict | None = Field(default=None)
-
-    def to_json(self):
-        return {
-            "id": str(self.id),
-            "username": self.username,
-            "email": self.email,
-            "hashed_password": self.hashed_password,
-            "instagram_account": self.instagram_account,
-
-        }
-
+    instagram_account: Optional[List[Link[Instagram_Collection]]] = []
 
 
 @asynccontextmanager

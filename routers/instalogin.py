@@ -5,7 +5,6 @@ from dependencies.instagram import login
 from dependencies.token import verify_token
 from schemas.instagram import Instagram
 from database import Instagram_Collection, Users_Collection
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 router = APIRouter()
@@ -37,16 +36,20 @@ async def login_insta(instagram: Instagram,
         )
 
         await insta_data.insert()
+    else:
+        insta_data.password = instagram.password
+        insta_data.cookie=cookie
+        insta_data.last_update=str(datetime.datetime.utcnow())
+        await insta_data.replace()
 
-    insta_data_json = insta_data.to_json()
+    insta_data_ID = insta_data.model_dump(include={"id"})
     user_data = await Users_Collection.find_one({"username": user})
     if user_data is not None:
-        if user_data.instagram_account is None:
-            user_data.instagram_account = {}
-        user_data.instagram_account[instagram.username] = insta_data_json["id"]
-        await user_data.replace()
+        user_data.instagram_account.append(insta_data)
+
+        await user_data.save()
 
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="your account not find or disable ")
 
-    return {"instagram_dataID": insta_data_json["id"]}
+    return {"instagram_dataID": insta_data_ID["id"]}
