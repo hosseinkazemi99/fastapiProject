@@ -24,13 +24,19 @@ class Users_Collection(Document):
     hashed_password: str
     instagram_account: Optional[List[Link[Instagram_Collection]]] = []
 
+class Followers_Collection(Document):
+    user_account: str
+    followers : list
+    last_update: str
+    instagram_account: Optional[List[Link[Instagram_Collection]]] = []
+
 
 @asynccontextmanager
 async def my_database(app: FastAPI):
     client = AsyncIOMotorClient(os.environ.get("MONGO_URI"))
 
     await beanie.init_beanie(database=client.FastAPIProject,
-                             document_models=[Instagram_Collection, Users_Collection])
+                             document_models=[Instagram_Collection, Users_Collection, Followers_Collection])
 
     print("Startup complete")
     yield

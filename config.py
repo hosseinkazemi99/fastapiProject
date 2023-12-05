@@ -9,7 +9,7 @@ app = FastAPI(
 app.include_router(user.router, tags=["user"])
 app.include_router(protect.router, tags=["protected"])
 app.include_router(instalogin.router, tags=["instagram"])
-# app.include_router(instafollowers.router, tags=["instafollowers"])
+app.include_router(instafollowers.router, tags=["instafollowers"])
 load_dotenv()
 
 # @app.on_event("startup")
