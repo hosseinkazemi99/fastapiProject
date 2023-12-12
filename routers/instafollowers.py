@@ -79,6 +79,5 @@ async def followers(userfollowers: UserFollower,
         follower_collection.last_update = str(datetime.datetime.utcnow())
         await follower_collection.replace()
 
-    follower_collection_id = follower_collection.model_dump(include={"id"})
 
-    return {"follower_collection_id": follower_collection_id["id"]}
+    return {"follower": followers_user}
